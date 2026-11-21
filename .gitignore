@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+
+# Editors / tools
+.vscode/
+.idea/
+.claude/
+.streamlit/secrets.toml
+
+# OS
+Thumbs.db
+desktop.ini
+.DS_Store
