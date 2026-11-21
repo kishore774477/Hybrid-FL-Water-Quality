@@ -331,6 +331,16 @@ with st.expander("Concept Drift Status", expanded=True):
         events = sorted({e for log in logs for e in log["drift_events"]})
         status = f"Drift-triggered fine-tuning in rounds {events}" if events else "No drift detected during training"
         st.write(f"Training log status: **{status}**")
+        checks = logs[0].get("drift_checks", [])
+        drifted = [c for c in checks if c["drift"]]
+        if drifted:
+            st.markdown("**Fine-tuning triggers during training** (seed 0)")
+            st.dataframe(
+                pd.DataFrame(drifted)[["round", "region", "psi"]].rename(
+                    columns={"round": "Round", "region": "Region", "psi": "PSI"}
+                ).round(4),
+                hide_index=True,
+            )
 
 with st.expander("📘 Training Summary"):
     st.markdown("""

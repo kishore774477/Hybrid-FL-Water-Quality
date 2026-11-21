@@ -4,7 +4,7 @@ A **Hybrid Federated Learning** system for water quality monitoring. Simulated c
 
 - **Uncertainty-weighted aggregation**: clients with lower prediction entropy get more influence.
 - **Hierarchical FL**: client models are aggregated within each region first, then across regions.
-- **Concept drift detection (PSI)**: when drift is detected, the global model is fine-tuned centrally.
+- **Concept drift detection (PSI)**: every 5 rounds, each region's data is compared with the pooled training distribution. A region whose PSI is above `DRIFT_THRESHOLD` triggers centralized fine-tuning on that region's data. An equal-sized replay sample of the reference data is mixed in, so the model doesn't forget the other regions.
 - **Confidence-aware decisions**: low-confidence predictions are flagged for lab testing.
 - **Explainability**: permutation feature importance.
 - **Baselines**: Logistic Regression and Random Forest, trained on the same client data.
@@ -54,8 +54,10 @@ Hyperparameters (seeds, rounds, local epochs, thresholds) are set in `config.py`
 |---|---|
 | Logistic Regression | 80.88% ± 0.33% |
 | Random Forest | 99.05% ± 0.14% |
-| Hybrid FL (mean over seeds) | 86.76% ± 2.57% |
-| Hybrid FL (best saved model) | 89.20% |
+| Hybrid FL (mean over seeds) | 93.54% ± 0.54% |
+| Hybrid FL (best saved model) | 94.19% |
+
+In each run the industrial (PSI ≈ 0.80) and agricultural (PSI ≈ 0.61) regions trigger drift fine-tuning at rounds 5, 10 and 15. The residential region (PSI ≈ 0.03) does not.
 
 ## 📂 Project Structure
 

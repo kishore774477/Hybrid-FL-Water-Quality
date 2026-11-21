@@ -59,11 +59,12 @@ clients_data = {
     "agricultural_2": pd.read_csv(get_path("data/splits/client_agricultural_2.csv"))
 }
 
-# Reference for Drift
-reference_df = clients_data["industrial_1"]
+# Reference for Drift: the pooled training distribution across all clients.
+# Each region's current data is compared against it during periodic checks.
+reference_df = pd.concat(clients_data.values(), ignore_index=True)
 
 def run_trial(seed):
-    print(f"Running Seed {seed}...", end="", flush=True)
+    print(f"Running Seed {seed}...", flush=True)
     set_seed(seed)
     
     # Initialize Global Model
@@ -81,6 +82,7 @@ def run_trial(seed):
     # Logging objects
     log_accuracies = []
     log_drift_events = []
+    log_drift_checks = []
     log_weights = []
 
     for r in range(ROUNDS):
@@ -118,12 +120,20 @@ def run_trial(seed):
         global_model.load_state_dict(global_state)
         
         # Hybrid Control (Drift Check)
-        # Checking every 5 rounds to simulate periodic checks
-        if (r+1) % 5 == 0: 
-             global_model, drift_flag = hybrid_control(global_model, reference_df, clients_data["industrial_1"], TARGET_COL)
-             if drift_flag:
-                 log_drift_events.append(r+1)
-                 
+        # Every 5 rounds, compare each region's data with the pooled reference.
+        # A drifted region triggers centralized fine-tuning on that region's data.
+        if (r+1) % 5 == 0:
+            for region, client_names in regions.items():
+                region_df = pd.concat([clients_data[c] for c in client_names], ignore_index=True)
+                global_model, drift_flag, psi = hybrid_control(
+                    global_model, reference_df, region_df, TARGET_COL, region=region
+                )
+                log_drift_checks.append({
+                    "round": r+1, "region": region, "psi": psi, "drift": drift_flag
+                })
+                if drift_flag and (r+1) not in log_drift_events:
+                    log_drift_events.append(r+1)
+
         # Evaluate model after round
         metrics = evaluate_model(global_model, X_test, y_test)
         log_accuracies.append(metrics['accuracy'])
@@ -136,6 +146,7 @@ def run_trial(seed):
         "seed": seed,
         "round_accuracies": log_accuracies,
         "drift_events": log_drift_events,
+        "drift_checks": log_drift_checks,
         "uncertainties": log_weights
     }
     
