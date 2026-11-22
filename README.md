@@ -13,27 +13,56 @@ The dataset (`data/raw/water_quality.csv`) has 14 physico-chemical parameters an
 
 ## 🚀 Quick Start
 
-### 1. Install dependencies
-Requires Python 3.10+.
+Requires Python 3.10+. Run all commands from the project folder.
 
-```bash
-python -m venv venv
-# Windows
-venv\Scripts\activate
-# macOS / Linux
-source venv/bin/activate
+### 1. Create the virtual environment (first time only)
 
-pip install -r requirements.txt
+**Windows (PowerShell)**
+```powershell
+py -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
 ```
+
+**macOS / Linux**
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
+```
+
+> If PowerShell says *running scripts is disabled*, run
+> `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` once, then activate again.
 
 ### 2. Run the dashboard
 The repository already contains the trained models, so you can start the dashboard right away:
 
-```bash
+```powershell
+.\.venv\Scripts\Activate.ps1      # Windows (skip if (.venv) is already shown)
 python -m streamlit run gui/dashboard.py
 ```
 
+Then open **http://localhost:8501**. Keep the terminal open while you use the dashboard; press `Ctrl+C` to stop it.
+
 Enter raw water measurements (the defaults are the dataset medians), choose a model and click **Analyze Water Sample**. Inputs are standardized with the training scaler (`saved_models/scaler.pkl`) before prediction.
+
+### Troubleshooting
+
+**`Fatal error in launcher: Unable to create process using ...python.exe`**
+The `.venv` was created in a different folder and the project was moved (for example, into OneDrive). A virtual environment can't be moved, so rebuild it:
+
+```powershell
+deactivate                          # if (.venv) is shown
+Remove-Item .venv -Recurse -Force
+py -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
+```
+
+Always start the dashboard with `python -m streamlit ...` rather than `streamlit ...`; it keeps working even if the launcher `.exe` files break.
+
+**`localhost refused to connect` / `ERR_CONNECTION_REFUSED`**
+The dashboard isn't running. Start it with the command in step 2 and keep that terminal open.
 
 ## 🔁 Reproduce the pipeline
 
