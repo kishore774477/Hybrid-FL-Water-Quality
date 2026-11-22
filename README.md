@@ -17,11 +17,11 @@ The dataset (`data/raw/water_quality.csv`) has 14 physico-chemical parameters an
 Requires Python 3.10+.
 
 ```bash
-python -m venv .venv
+python -m venv venv
 # Windows
 .venv\Scripts\activate
 # macOS / Linux
-source .venv/bin/activate
+source venv/bin/activate
 
 pip install -r requirements.txt
 ```
@@ -30,7 +30,7 @@ pip install -r requirements.txt
 The repository already contains the trained models, so you can start the dashboard right away:
 
 ```bash
-streamlit run gui/dashboard.py
+python -m streamlit run gui/dashboard.py
 ```
 
 Enter raw water measurements (the defaults are the dataset medians), choose a model and click **Analyze Water Sample**. Inputs are standardized with the training scaler (`saved_models/scaler.pkl`) before prediction.
